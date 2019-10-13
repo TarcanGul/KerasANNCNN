@@ -10,15 +10,15 @@ import logging
 
 random.seed(1618)
 np.random.seed(1618)
-tf.random.set_seed(1618)
+tf.set_random_seed(1618)
 
 logger = tf.get_logger()
 logger.setLevel(logging.ERROR)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-ALGORITHM = "guesser"
+#ALGORITHM = "guesser"
 #ALGORITHM = "tf_net"
-#ALGORITHM = "tf_conv"
+ALGORITHM = "tf_conv"
 
 DATASET = "mnist_d"
 #DATASET = "mnist_f"
@@ -58,13 +58,34 @@ def guesserClassifier(xTest):
 
 
 def buildTFNeuralNet(x, y, eps = 6):
-    pass        #TODO: Implement a standard ANN here.
-    return None
+    model = keras.Sequential()
+    lossType = keras.losses.categorical_crossentropy
+    opt = tf.train.AdamOptimizer()
+    model.add(keras.layers.Flatten())
+    model.add(keras.layers.Dense(128, activation="relu"))
+    model.add(keras.layers.Dense(10, activation="softmax"))
+    model.compile(optimizer = opt, loss = lossType)
+    #Train model
+    model.fit(x, y, epochs=8, batch_size=100)
+    return model
 
 
 def buildTFConvNet(x, y, eps = 10, dropout = True, dropRate = 0.2):
-    pass        #TODO: Implement a CNN here. dropout option is required.
-    return None
+    model = keras.Sequential()
+    inShape = (IW,IH,1) #Images that is 28x28 pixels.
+    lossType = keras.losses.categorical_crossentropy
+    opt = tf.train.AdamOptimizer()
+    model.add(keras.layers.Conv2D(32, kernel_size = (3,3), activation="relu", input_shape = inShape))
+    model.add(keras.layers.Conv2D(64, kernel_size = (3,3), activation="relu"))
+    model.add(keras.layers.MaxPooling2D(pool_size = (2,2)))
+    model.add(keras.layers.Flatten())
+    model.add(keras.layers.Dropout(0.2))
+    model.add(keras.layers.Dense(128, activation="relu"))
+    model.add(keras.layers.Dense(10, activation="softmax"))
+    model.compile(optimizer = opt, loss = lossType)
+    #Train model
+    model.fit(x.reshape([-1,28,28,1]), y.reshape([-1, 10]), epochs=8, batch_size=100)
+    return model
 
 #=========================<Pipeline Functions>==================================
 
@@ -90,10 +111,11 @@ def getRawData():
     print("Shape of yTest dataset: %s." % str(yTest.shape))
     return ((xTrain, yTrain), (xTest, yTest))
 
-
+def normalizeData(raw):
+    return ((raw[0][0] / 256, raw[0][1]), (raw[1][0] / 256, raw[1][1]))
 
 def preprocessData(raw):
-    ((xTrain, yTrain), (xTest, yTest)) = raw
+    ((xTrain, yTrain), (xTest, yTest)) = normalizeData(raw)
     if ALGORITHM != "tf_conv":
         xTrainP = xTrain.reshape((xTrain.shape[0], IS))
         xTestP = xTest.reshape((xTest.shape[0], IS))
