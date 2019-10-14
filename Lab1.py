@@ -22,9 +22,9 @@ ALGORITHM = "tf_conv"
 
 #DATASET = "mnist_d"
 #DATASET = "mnist_f"
-DATASET = "cifar_10"
+#DATASET = "cifar_10"
 #DATASET = "cifar_100_f"
-#DATASET = "cifar_100_c"
+DATASET = "cifar_100_c"
 
 if DATASET == "mnist_d":
     NUM_CLASSES = 10
@@ -45,9 +45,17 @@ elif DATASET == "cifar_10":
     IZ = 3
     IS = 32*32
 elif DATASET == "cifar_100_f":
-    pass                                 # TODO: Add this case.
+    NUM_CLASSES = 100
+    IH = 32
+    IW = 32
+    IZ = 3
+    IS = 32*32                                
 elif DATASET == "cifar_100_c":
-    pass                                 # TODO: Add this case.
+    NUM_CLASSES = 100
+    IH = 32
+    IW = 32
+    IZ = 3
+    IS = 32*32                                
 
 
 #=========================<Classifier Functions>================================
@@ -76,16 +84,17 @@ def buildTFNeuralNet(x, y, eps = 6):
 
 def buildTFConvNet(x, y, eps = 10, dropout = True, dropRate = 0.2):
     model = keras.Sequential()
-    inShape = (IW,IH,IZ) #Images that is 28x28 pixels.
+    inShape = (IW,IH,IZ) 
     lossType = keras.losses.categorical_crossentropy
     opt = tf.train.AdamOptimizer()
     model.add(keras.layers.Conv2D(32, kernel_size = (3,3), activation="relu", input_shape = inShape))
     model.add(keras.layers.Conv2D(64, kernel_size = (3,3), activation="relu"))
     model.add(keras.layers.MaxPooling2D(pool_size = (2,2)))
     model.add(keras.layers.Flatten())
-    model.add(keras.layers.Dropout(0.2))
+    if dropout:
+        model.add(keras.layers.Dropout(dropRate))
     model.add(keras.layers.Dense(128, activation="relu"))
-    model.add(keras.layers.Dense(10, activation="softmax"))
+    model.add(keras.layers.Dense(NUM_CLASSES, activation="softmax"))
     model.compile(optimizer = opt, loss = lossType)
     #Train model
     model.fit(x, y, epochs=8, batch_size=100)
@@ -104,9 +113,11 @@ def getRawData():
         cifar = tf.keras.datasets.cifar10
         (xTrain, yTrain), (xTest, yTest) = cifar.load_data()
     elif DATASET == "cifar_100_f":
-        pass      # TODO: Add this case.
+        cifar = tf.keras.datasets.cifar100
+        (xTrain, yTrain), (xTest, yTest) = cifar.load_data(label_mode="fine")
     elif DATASET == "cifar_100_c":
-        pass      # TODO: Add this case.
+        cifar = tf.keras.datasets.cifar100
+        (xTrain, yTrain), (xTest, yTest) = cifar.load_data(label_mode="coarse")
     else:
         raise ValueError("Dataset not recognized.")
     print("Dataset: %s" % DATASET)
@@ -184,7 +195,6 @@ def evalResults(data, preds):
     accuracy = acc / preds.shape[0]
     print("Classifier algorithm: %s" % ALGORITHM)
     print("Classifier accuracy: %f%%" % (accuracy * 100))
-    print()
 
 
 
