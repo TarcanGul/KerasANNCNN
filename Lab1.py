@@ -20,9 +20,9 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 #ALGORITHM = "tf_net"
 ALGORITHM = "tf_conv"
 
-DATASET = "mnist_d"
+#DATASET = "mnist_d"
 #DATASET = "mnist_f"
-#DATASET = "cifar_10"
+DATASET = "cifar_10"
 #DATASET = "cifar_100_f"
 #DATASET = "cifar_100_c"
 
@@ -39,7 +39,11 @@ elif DATASET == "mnist_f":
     IZ = 1
     IS = 784
 elif DATASET == "cifar_10":
-    pass                                 # TODO: Add this case.
+    NUM_CLASSES = 10
+    IH = 32
+    IW = 32
+    IZ = 3
+    IS = 32*32
 elif DATASET == "cifar_100_f":
     pass                                 # TODO: Add this case.
 elif DATASET == "cifar_100_c":
@@ -72,7 +76,7 @@ def buildTFNeuralNet(x, y, eps = 6):
 
 def buildTFConvNet(x, y, eps = 10, dropout = True, dropRate = 0.2):
     model = keras.Sequential()
-    inShape = (IW,IH,1) #Images that is 28x28 pixels.
+    inShape = (IW,IH,IZ) #Images that is 28x28 pixels.
     lossType = keras.losses.categorical_crossentropy
     opt = tf.train.AdamOptimizer()
     model.add(keras.layers.Conv2D(32, kernel_size = (3,3), activation="relu", input_shape = inShape))
@@ -84,7 +88,7 @@ def buildTFConvNet(x, y, eps = 10, dropout = True, dropRate = 0.2):
     model.add(keras.layers.Dense(10, activation="softmax"))
     model.compile(optimizer = opt, loss = lossType)
     #Train model
-    model.fit(x.reshape([-1,28,28,1]), y.reshape([-1, 10]), epochs=8, batch_size=100)
+    model.fit(x, y, epochs=8, batch_size=100)
     return model
 
 #=========================<Pipeline Functions>==================================
@@ -97,7 +101,8 @@ def getRawData():
         mnist = tf.keras.datasets.fashion_mnist
         (xTrain, yTrain), (xTest, yTest) = mnist.load_data()
     elif DATASET == "cifar_10":
-        pass      # TODO: Add this case.
+        cifar = tf.keras.datasets.cifar10
+        (xTrain, yTrain), (xTest, yTest) = cifar.load_data()
     elif DATASET == "cifar_100_f":
         pass      # TODO: Add this case.
     elif DATASET == "cifar_100_c":
