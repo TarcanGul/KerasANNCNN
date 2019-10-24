@@ -68,7 +68,13 @@ def guesserClassifier(xTest):
         ans.append(pred)
     return np.array(ans)
 
-
+'''
+Building an artificial neural net using keras. I used the number of epochs as 8 because I think it is a good balance for training.
+I used categorical cross entropy for the loss function because it performs well on classification tasks.
+I used two layers, with first layer having 128 neurons and the second one having NUM_CLASSES neurons.
+For the first layer, I observed that having 2's power in the number of neurons helps with computation and accuracy.
+The last layer has NUM_CLASSES neurons because at the end we want to get the info of which class the image belongs to.
+'''
 def buildTFNeuralNet(x, y, eps = 8):
     model = keras.Sequential()
     lossType = keras.losses.categorical_crossentropy
@@ -81,7 +87,17 @@ def buildTFNeuralNet(x, y, eps = 8):
     model.fit(x, y, epochs=eps, batch_size=100)
     return model
 
+'''
+Building an convolutional neural net using keras. I used the number of epochs as 10 because I think it is a good balance for training.
+I used categorical cross entropy for the loss function because it performs well on classification tasks.
+We use adam optimizer as a optimizer since that is what we used in class. It helps with optimizing the learning rate.
+I started with two convolutional networks with ReLU's. The reason I did the second layer larger is that we have more 'shapes'
+possible in second layer. In first layer, my imagination was we were only detecting lines or simple shapes. 
+I set dropout to true because it will prevent overfitting.
+The last two denses is similar to the ANN I built above.
 
+I increased accuracy by making the second layer larger, using relu and increase the number of epochs.
+'''
 def buildTFConvNet(x, y, eps = 10, dropout = True, dropRate = 0.2):
     model = keras.Sequential()
     inShape = (IW,IH,IZ) 
